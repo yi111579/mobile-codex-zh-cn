@@ -14,6 +14,11 @@ final class UsageWidgetRenderer {
     private static final float MAX_PIXELS = 1_000_000f;
     static String name(String provider) { return switch (provider) { case "claude" -> "Claude"; case "agy" -> "Gemini"; default -> "Codex"; }; }
     private static boolean korean(Context context) { return AppLanguage.locale(context).getLanguage().equals("ko"); }
+    private static boolean chinese(Context context) { return AppLanguage.locale(context).getLanguage().equals("zh"); }
+    private static String localized(Context context, String korean, String english, String chinese) {
+        if (chinese(context)) return chinese;
+        return korean(context) ? korean : english;
+    }
     private static String tail(String label) {
         int separator = label.lastIndexOf(" · ");
         return separator >= 0 ? label.substring(separator + 3) : label;
@@ -28,11 +33,11 @@ final class UsageWidgetRenderer {
         int separator = label.lastIndexOf(" · ");
         if (separator >= 0) return label.substring(0, separator + 3) + label(context, label.substring(separator + 3));
         return switch (kind(label)) {
-            case "session" -> korean(context) ? "5시간" : "5 hours";
-            case "week" -> korean(context) ? "주간" : "Weekly";
-            case "daily" -> korean(context) ? "일간" : "Daily";
-            case "primary" -> korean(context) ? "기본" : "Primary";
-            case "secondary" -> korean(context) ? "추가" : "Secondary";
+            case "session" -> localized(context, "5시간", "5 hours", "5 小时");
+            case "week" -> localized(context, "주간", "Weekly", "每周");
+            case "daily" -> localized(context, "일간", "Daily", "每日");
+            case "primary" -> localized(context, "기본", "Primary", "主要额度");
+            case "secondary" -> localized(context, "추가", "Secondary", "附加额度");
             default -> label;
         };
     }
@@ -50,17 +55,16 @@ final class UsageWidgetRenderer {
         return separator < 0 ? label(context, label) : chipLabel(context, label) + " · " + label.substring(0, separator).replaceFirst("(?i)\\s+models$", "");
     }
     private static String state(Context context, UsageWidgetData data) {
-        boolean ko = korean(context);
-        return data.status().equals("signed_out") ? (ko ? "로그인 필요" : "Sign in")
-            : data.limits().isEmpty() ? (ko ? "확인 필요" : "No reading") : (ko ? "갱신 필요" : "Refresh needed");
+        return data.status().equals("signed_out") ? (localized(context, "로그인 필요", "Sign in", "请登录"))
+            : data.limits().isEmpty() ? (localized(context, "확인 필요", "No reading", "暂无数据")) : (localized(context, "갱신 필요", "Refresh needed", "需要刷新"));
     }
     static String description(Context context, String provider, UsageWidgetData data) {
         long now = System.currentTimeMillis();
         StringBuilder text = new StringBuilder(name(provider));
         for (UsageWidgetData.Limit limit : data.current(now)) text.append(", ").append(label(context, limit.label()))
-            .append(korean(context) ? " 남은 " : " remaining ").append(Math.round(limit.remaining())).append('%');
+            .append(localized(context, " 남은 ", " remaining ", " 剩余 ")).append(Math.round(limit.remaining())).append('%');
         if (data.current(now).isEmpty()) text.append(", ").append(state(context, data));
-        if (data.updatedAt() > 0) text.append(", ").append(korean(context) ? "마지막 확인 " : "Last checked ")
+        if (data.updatedAt() > 0) text.append(", ").append(localized(context, "마지막 확인 ", "Last checked ", "上次检查 "))
             .append(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, AppLanguage.locale(context)).format(new Date(data.updatedAt())));
         return text.toString();
     }
@@ -260,19 +264,21 @@ final class UsageWidgetRenderer {
     private static String stamp(Context context, UsageWidgetData data, long now) {
         if (data.updatedAt() == 0) return state(context, data);
         long age = Math.max(0, (now - data.updatedAt()) / 60000);
-        return age < 1 ? (korean(context) ? "방금 확인" : "Just checked")
-            : age < 60 ? age + (korean(context) ? "분 전" : "m ago")
-            : age < 1440 ? age / 60 + (korean(context) ? "시간 전" : "h ago") : age / 1440 + (korean(context) ? "일 전" : "d ago");
+        return age < 1 ? (localized(context, "방금 확인", "Just checked", "刚刚检查"))
+            : age < 60 ? age + (localized(context, "분 전", "m ago", " 分钟前"))
+            : age < 1440 ? age / 60 + (localized(context, "시간 전", "h ago", " 小时前")) : age / 1440 + (localized(context, "일 전", "d ago", " 天前"));
     }
     private static String duration(Context context, long resetsAt, long now) {
         long minutes = (resetsAt - now + 59999) / 60000;
+        if (chinese(context)) return minutes >= 60 ? minutes / 60 + "小时" + minutes % 60 + "分钟" : minutes + "分钟";
         if (korean(context)) return minutes >= 60 ? minutes / 60 + "시간 " + minutes % 60 + "분" : minutes + "분";
         return minutes >= 60 ? minutes / 60 + "h " + minutes % 60 + "m" : minutes + "m";
     }
     private static String reset(Context context, long resetsAt, long now) {
-        return duration(context, resetsAt, now) + (korean(context) ? " 후 초기화" : " to reset");
+        return duration(context, resetsAt, now) + (localized(context, " 후 초기화", " to reset", "后重置"));
     }
     private static String resetShort(Context context, long resetsAt, long now) {
+        if (chinese(context)) return duration(context, resetsAt, now) + "后";
         return korean(context) ? duration(context, resetsAt, now) + " 후" : "in " + duration(context, resetsAt, now);
     }
     private static void text(Canvas canvas, Paint paint, String value, float x, float y, float size, int color, float width, boolean bold) {

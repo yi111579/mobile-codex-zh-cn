@@ -7,8 +7,8 @@
     const ids = [...new Set(supported.filter(v => typeof v === 'string' && /^[a-z0-9_-]+$/i.test(v)))];
     return {ids, defaultVoice: ids.includes(catalog.defaultV1) ? catalog.defaultV1 : ids[0] || ''};
   }
-  function voiceName(id) {
-    return {hanul:'한울', haetsal:'햇살'}[id] || id[0].toUpperCase() + id.slice(1);
+  function voiceName(id, t = text => text) {
+    return {hanul:t('한울'), haetsal:t('햇살')}[id] || id[0].toUpperCase() + id.slice(1);
   }
   function voiceGroups(ids) {
     // Only classify voices whose language group is confirmed in the ChatGPT picker.
@@ -59,7 +59,7 @@
       if (!catalog.ids.length) throw new Error(t('사용 가능한 음성이 없습니다.'));
       voices = catalog.ids;
       if (!voices.includes(voice)) voice = catalog.defaultVoice;
-      $('live-voice').replaceChildren(...voices.map(id => new Option(voiceName(id), id)));
+      $('live-voice').replaceChildren(...voices.map(id => new Option(voiceName(id, t), id)));
       $('live-voice').value = voice;
       $('live-voice-list').replaceChildren(...voiceGroups(voices).flatMap(group => {
         const heading = document.createElement('div');
@@ -67,7 +67,7 @@
         return [heading, ...group.ids.map(id => {
         const label = document.createElement('label'), input = document.createElement('input'), name = document.createElement('span');
         label.className = 'live-voice-choice'; input.type = 'radio'; input.name = 'live-voice-choice'; input.value = id;
-        name.textContent = voiceName(id);
+        name.textContent = voiceName(id, t);
         input.addEventListener('change', () => { if (input.checked) { $('live-voice').value = id; syncVoiceChoice(); } });
         label.append(input, name); return label;
         })];

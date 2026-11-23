@@ -1772,7 +1772,7 @@
     const date = new Date(value * 1000); if (!Number.isFinite(date.getTime())) return '';
     const options = {month:'short', day:'numeric', hour:'numeric', minute:'2-digit'};
     if (date.getFullYear() !== new Date().getFullYear()) options.year = 'numeric';
-    return date.toLocaleString(L.language() === 'ko' ? 'ko-KR' : 'en-US', options);
+    return date.toLocaleString(L.language(), options);
   }
   function usageDuration(value) {
     if (value === 10080) return t('주간 한도');
@@ -2255,7 +2255,9 @@
     const key = 'sidebar-section-' + listId;
     const apply = expanded => {
       button.setAttribute('aria-expanded', String(expanded));
-      button.setAttribute('aria-label', (listId === 'projects' ? '프로젝트 ' : '일반 대화 ') + (expanded ? '접기' : '펼치기'));
+      button.setAttribute('aria-label', t(listId === 'projects'
+        ? (expanded ? '프로젝트 접기' : '프로젝트 펼치기')
+        : (expanded ? '일반 대화 접기' : '일반 대화 펼치기')));
       list.hidden = !expanded;
     };
     apply(localStorage.getItem(key) !== 'collapsed');

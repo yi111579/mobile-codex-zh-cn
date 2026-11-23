@@ -1,0 +1,7 @@
+<resources>
+    <string name="codex_usage_widget">Codex 用量</string>
+    <string name="claude_usage_widget">Claude 用量</string>
+    <string name="gemini_usage_widget">Gemini 用量</string>
+    <string name="usage_widget_description">剩余额度与重置时间</string>
+    <string name="usage_widget_refresh">刷新用量</string>
+</resources>
