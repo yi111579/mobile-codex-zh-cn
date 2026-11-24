@@ -29,3 +29,9 @@ Mobile Codex 的简体中文社区版，基于 [nokryong/mobile-codex v0.4.0](ht
 ## 来源与许可证
 
 应用代码和原项目素材依照 [GPL-3.0-only](LICENSE) 分发。汉化基于 [nokryong/mobile-codex](https://github.com/nokryong/mobile-codex)，保留原作者和贡献者署名。随应用使用的第三方组件各自适用原许可证，见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+
+### Linux 环境停在「正在提取」
+
+若长时间没有进度，可先取消这次安装，然后在「设置 → 工具 → 内置开发工具」运行「检查工具执行」。如果 Python、Node.js 和 Git 都超时，应用还没有进入 Google 登录流程，反复获取登录码不会修复本地工具。
+
+在一台运行 ColorOS 17 的一加设备上观察到了这一现象。该设备的存储空间充足，简中版与 v0.4.0 上游 APK 使用相同的运行时二进制和 Linux 安装配置。尚未确认故障属于设备兼容性，还是其他运行环境差异。
